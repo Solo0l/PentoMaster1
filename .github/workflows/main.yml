@@ -20,11 +20,11 @@ jobs:
       - name: Check dist jar exists
         shell: pwsh
         run: |
-          if (!(Test-Path "dist\PentoMaster_v1.jar")) {
-            Write-Error "dist\PentoMaster_v1.jar not found. Put your runnable jar there."
+          if (!(Test-Path "PentoMaster_v1\dist\PentoMaster_v1.jar")) {
+            Write-Error "Jar not found at PentoMaster_v1/dist/PentoMaster_v1.jar"
             exit 1
           } else {
-            Write-Host "Found dist\PentoMaster_v1.jar"
+            Write-Host "Found jar"
           }
 
       - name: Package EXE
@@ -34,7 +34,7 @@ jobs:
             --type exe `
             --name "PentoMaster" `
             --app-version "1.0.0" `
-            --input dist `
+            --input PentoMaster_v1/dist `
             --main-jar "PentoMaster_v1.jar" `
             --main-class "com.example.PentoMaster_v1.Main" `
             --dest out `
