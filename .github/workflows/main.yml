@@ -1,0 +1,56 @@
+name: Build Windows EXE (JavaFX)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download JavaFX SDK
+        shell: pwsh
+        run: |
+          $ver="21.0.2"
+          Invoke-WebRequest -Uri "https://download2.gluonhq.com/openjfx/$ver/openjfx-$ver_windows-x64_bin-sdk.zip" -OutFile "javafx.zip"
+          Expand-Archive "javafx.zip" -DestinationPath "."
+          Rename-Item "javafx-sdk-$ver" "javafx"
+
+      - name: Check dist jar exists
+        shell: pwsh
+        run: |
+          if (!(Test-Path "dist\PentoMaster_v1.jar")) {
+            Write-Error "dist\PentoMaster_v1.jar not found. Put your runnable jar there."
+            exit 1
+          } else {
+            Write-Host "Found dist\PentoMaster_v1.jar"
+          }
+
+      - name: Package EXE
+        shell: pwsh
+        run: |
+          $JAVAFX = "${{ github.workspace }}\javafx\lib"
+          jpackage `
+            --type exe `
+            --name "PentoMaster" `
+            --app-version "1.0.0" `
+            --input dist `
+            --main-jar "PentoMaster_v1.jar" `
+            --main-class "com.example.PentoMaster_v1.Main" `
+            --dest out `
+            --java-options "--module-path $JAVAFX --add-modules javafx.controls,javafx.graphics,javafx.base,javafx.media"
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: PentoMaster-Windows-EXE
+          path: out/**
